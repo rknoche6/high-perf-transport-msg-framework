@@ -1,0 +1,3 @@
+add_executable(timestamp_test base/TimestampTest.cpp)
+target_link_libraries(timestamp_test PRIVATE highperf::core)
+add_test(NAME timestamp_test COMMAND timestamp_test)

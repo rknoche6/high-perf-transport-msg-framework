@@ -1,0 +1,22 @@
+include(CheckSymbolExists)
+
+add_library(highperf_platform INTERFACE)
+add_library(highperf::platform ALIAS highperf_platform)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  set(CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
+  check_symbol_exists(epoll_create1 "sys/epoll.h" HIGHPERF_HAVE_EPOLL)
+  check_symbol_exists(eventfd "sys/eventfd.h" HIGHPERF_HAVE_EVENTFD)
+  check_symbol_exists(timerfd_create "sys/timerfd.h" HIGHPERF_HAVE_TIMERFD)
+  check_symbol_exists(accept4 "sys/socket.h" HIGHPERF_HAVE_ACCEPT4)
+  unset(CMAKE_REQUIRED_DEFINITIONS)
+  target_compile_definitions(highperf_platform INTERFACE _GNU_SOURCE)
+else()
+  check_symbol_exists(kqueue "sys/event.h" HIGHPERF_HAVE_KQUEUE)
+endif()
+
+foreach(feature EPOLL KQUEUE EVENTFD TIMERFD ACCEPT4)
+  if(HIGHPERF_HAVE_${feature})
+    target_compile_definitions(highperf_platform INTERFACE HIGHPERF_HAVE_${feature}=1)
+  endif()
+endforeach()
